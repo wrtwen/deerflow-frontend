@@ -1,0 +1,8 @@
+
+/* 隐藏“最近的对话”列表区域（根据常见类名推测） */
+[class*="recent"], 
+[class*="conversation-list"],
+[class*="chat-history"] {
+    display: none !important;
+}
+

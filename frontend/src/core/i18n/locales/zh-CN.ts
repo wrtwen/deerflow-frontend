@@ -60,9 +60,9 @@ export const zhCN: Translations = {
 
   // Welcome
   welcome: {
-    greeting: "你好，欢迎回来！",
+    greeting: "你好！",
     description:
-      "欢迎使用 🦌 DeerFlow，一个完全开源的超级智能体。通过内置和自定义的 Skills，\nDeerFlow 可以帮你搜索网络、分析数据，还能为你生成幻灯片、\n图片、视频、播客及网页等，几乎可以做任何事情。",
+      "AI 智能隐患录入助手，帮你快速记录和排查工厂安全隐患。\n你可以描述现场情况、上传照片，或直接提问安全规范相关问题。",
 
     createYourOwnSkill: "创建你自己的 Agent SKill",
     createYourOwnSkillDescription:
@@ -79,7 +79,7 @@ export const zhCN: Translations = {
 
   // Input Box
   inputBox: {
-    placeholder: "今天我能为你做些什么？",
+    placeholder: "描述你发现的安全隐患...",
     createSkillPrompt:
       "我们一起用 skill-creator 技能来创建一个技能吧。先问问我希望这个技能能做什么。",
     addAttachments: "添加附件",
@@ -103,8 +103,8 @@ export const zhCN: Translations = {
     reasoningEffortHigh: "高",
     reasoningEffortHighDescription: "全维度逻辑推演 + 多路径验证 + 反推校验",
     searchModels: "搜索模型...",
-    surpriseMe: "小惊喜",
-    surpriseMePrompt: "给我一个小惊喜吧",
+    surpriseMe: "随手拍隐患",
+    surpriseMePrompt: "我刚刚看到一处可能的安全隐患，帮我分析一下严重程度和处理建议",
     followupLoading: "正在生成可能的后续问题...",
     followupConfirmTitle: "发送建议问题？",
     followupConfirmDescription: "当前输入框已有内容，选择发送方式。",
@@ -112,49 +112,48 @@ export const zhCN: Translations = {
     followupConfirmReplace: "替换并发送",
     suggestions: [
       {
-        suggestion: "写作",
-        prompt: "撰写一篇关于[主题]的博客文章",
+        suggestion: "记录隐患",
+        prompt: "我在[车间/区域]发现了一个安全隐患，具体情况是...",
         icon: PenLineIcon,
       },
       {
-        suggestion: "研究",
-        prompt: "深入浅出的研究一下[主题]，并总结发现。",
-        icon: MicroscopeIcon,
-      },
-      {
-        suggestion: "收集",
-        prompt: "从[来源]收集数据并创建报告。",
-        icon: ShapesIcon,
-      },
-      {
-        suggestion: "学习",
-        prompt: "学习关于[主题]并创建教程。",
+        suggestion: "安全规范",
+        prompt: "请告诉我关于[具体设备/操作]的安全规范要求",
         icon: GraduationCapIcon,
+      },
+      {
+        suggestion: "检查清单",
+        prompt: "帮我生成一份[车间类型]的日常安全检查清单",
+        icon: CompassIcon,
+      },
+      {
+        suggestion: "案例分析",
+        prompt: "给我分析一个关于[隐患类型]的事故案例和预防措施",
+        icon: MicroscopeIcon,
       },
     ],
     suggestionsCreate: [
       {
-        suggestion: "网页",
-        prompt: "生成一个关于[主题]的网页",
-        icon: CompassIcon,
+        suggestion: "整改方案",
+        prompt: "针对[隐患描述]提出详细的整改方案和期限建议",
+        icon: PenLineIcon,
       },
       {
-        suggestion: "图片",
-        prompt: "生成一个关于[主题]的图片",
+        suggestion: "风险评估",
+        prompt: "对[设备/作业]进行风险评估，列出可能的事故类型和等级",
+        icon: ShapesIcon,
+      },
+      {
+        suggestion: "培训材料",
+        prompt: "生成一份关于[安全主题]的培训材料",
         icon: ImageIcon,
-      },
-      {
-        suggestion: "视频",
-        prompt: "生成一个关于[主题]的视频",
-        icon: VideoIcon,
       },
       {
         type: "separator",
       },
       {
-        suggestion: "技能",
-        prompt:
-          "我们一起用 skill-creator 技能来创建一个技能吧。先问问我希望这个技能能做什么。",
+        suggestion: "其他",
+        prompt: "我想...",
         icon: SparklesIcon,
       },
     ],
@@ -226,7 +225,7 @@ export const zhCN: Translations = {
     visitGithub: "在 Github 上查看 DeerFlow",
     reportIssue: "报告问题",
     contactUs: "联系我们",
-    about: "关于 DeerFlow",
+    about: "关于",
     logout: "退出登录",
   },
 

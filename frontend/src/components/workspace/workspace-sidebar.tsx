@@ -26,7 +26,7 @@ export function WorkspaceSidebar({
         </SidebarHeader>
         <SidebarContent>
           <WorkspaceNavChatList />
-          {isSidebarOpen && <RecentChatList />}
+          {false && <RecentChatList />}
         </SidebarContent>
         <SidebarFooter>
           <WorkspaceNavMenu />
