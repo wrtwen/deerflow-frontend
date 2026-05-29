@@ -1,13 +1,8 @@
 "use client";
 
-import { MessageSquarePlus } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -18,7 +13,6 @@ import { cn } from "@/lib/utils";
 export function WorkspaceHeader({ className }: { className?: string }) {
   const { t } = useI18n();
   const { state } = useSidebar();
-  const pathname = usePathname();
   return (
     <>
       <div
@@ -49,19 +43,6 @@ export function WorkspaceHeader({ className }: { className?: string }) {
           </div>
         )}
       </div>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname === "/workspace/chats/new"}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/chats/new">
-              <MessageSquarePlus size={16} />
-              <span>{t.sidebar.newChat}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
     </>
   );
 }
