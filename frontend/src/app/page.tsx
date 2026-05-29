@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function LandingPage() {
-  return redirect("/workspace/chats/new");
+  return redirect("/workspace/agents");
 }
