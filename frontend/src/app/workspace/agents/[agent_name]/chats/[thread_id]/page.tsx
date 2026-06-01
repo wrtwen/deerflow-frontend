@@ -1,11 +1,10 @@
 "use client";
 
-import { BarChart3, BotIcon, Brain, ClipboardPen, PlusSquare } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { BarChart3, BotIcon, Brain, ClipboardPen } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import type { PromptInputMessage } from "@/components/ai-elements/prompt-input";
-import { Button } from "@/components/ui/button";
 import { AgentWelcome } from "@/components/workspace/agent-welcome";
 import { ArtifactTrigger } from "@/components/workspace/artifacts";
 import { ChatBox, useThreadChat } from "@/components/workspace/chats";
@@ -20,7 +19,6 @@ import { ThreadContext } from "@/components/workspace/messages/context";
 import { ThreadTitle } from "@/components/workspace/thread-title";
 import { TodoList } from "@/components/workspace/todo-list";
 import { TokenUsageIndicator } from "@/components/workspace/token-usage-indicator";
-import { Tooltip } from "@/components/workspace/tooltip";
 import { useAgent } from "@/core/agents";
 import { useI18n } from "@/core/i18n/hooks";
 import { useModels } from "@/core/models/hooks";
@@ -40,7 +38,6 @@ const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = 
 export default function AgentChatPage() {
   const { t } = useI18n();
   const [showFollowups, setShowFollowups] = useState(false);
-  const router = useRouter();
 
   const { agent_name } = useParams<{
     agent_name: string;
@@ -136,17 +133,6 @@ export default function AgentChatPage() {
               <ThreadTitle threadId={threadId} thread={thread} />
             </div>
             <div className="mr-4 flex items-center">
-              <Tooltip content={t.agents.newChat}>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    router.push(`/workspace/agents/${agent_name}/chats/new`);
-                  }}
-                >
-                  <PlusSquare /> {t.agents.newChat}
-                </Button>
-              </Tooltip>
               <TokenUsageIndicator
                 enabled={tokenUsageEnabled}
                 messages={thread.messages}
