@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, MessageSquareIcon, Trash2Icon } from "lucide-react";
+import { BarChart3, BotIcon, Brain, ClipboardPen, MessageSquareIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,11 +31,18 @@ interface AgentCardProps {
   agent: Agent;
 }
 
+const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "hazard-intel": Brain,
+  "hazard-input": ClipboardPen,
+  "hazard-stats": BarChart3,
+};
+
 export function AgentCard({ agent }: AgentCardProps) {
   const { t } = useI18n();
   const router = useRouter();
   const deleteAgent = useDeleteAgent();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const AgentIcon = agentIcons[agent.name] ?? BotIcon;
 
   function handleChat() {
     router.push(`/workspace/agents/${agent.name}/chats/new`);
@@ -58,7 +65,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                <BotIcon className="h-5 w-5" />
+                <AgentIcon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <CardTitle className="truncate text-base">

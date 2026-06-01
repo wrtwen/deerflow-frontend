@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, PlusSquare } from "lucide-react";
+import { BarChart3, BotIcon, Brain, ClipboardPen, PlusSquare } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
@@ -31,6 +31,12 @@ import { textOfMessage } from "@/core/threads/utils";
 import { env } from "@/env";
 import { cn } from "@/lib/utils";
 
+const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "hazard-intel": Brain,
+  "hazard-input": ClipboardPen,
+  "hazard-stats": BarChart3,
+};
+
 export default function AgentChatPage() {
   const { t } = useI18n();
   const [showFollowups, setShowFollowups] = useState(false);
@@ -41,6 +47,7 @@ export default function AgentChatPage() {
   }>();
 
   const { agent } = useAgent(agent_name);
+  const AgentIcon = agentIcons[agent_name] ?? BotIcon;
 
   const { threadId, setThreadId, isNewThread, setIsNewThread } =
     useThreadChat();
@@ -119,7 +126,7 @@ export default function AgentChatPage() {
           >
             {/* Agent badge */}
             <div className="flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1">
-              <BotIcon className="text-primary h-3.5 w-3.5" />
+              <AgentIcon className="text-primary h-3.5 w-3.5" />
               <span className="text-xs font-medium">
                 {agent?.display_name || agent?.name || agent_name}
               </span>
