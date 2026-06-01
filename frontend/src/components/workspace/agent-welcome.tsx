@@ -1,9 +1,15 @@
 "use client";
 
-import { BotIcon } from "lucide-react";
+import { BarChart3, BotIcon, Brain, ClipboardPen } from "lucide-react";
 
 import { type Agent } from "@/core/agents";
 import { cn } from "@/lib/utils";
+
+const welcomeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "hazard-intel": Brain,
+  "hazard-input": ClipboardPen,
+  "hazard-stats": BarChart3,
+};
 
 export function AgentWelcome({
   className,
@@ -14,8 +20,9 @@ export function AgentWelcome({
   agent: Agent | null | undefined;
   agentName: string;
 }) {
-  const displayName = agent?.name ?? agentName;
+  const displayName = agent?.display_name || agent?.name || agentName;
   const description = agent?.description;
+  const IconComponent = welcomeIcons[agentName] ?? BotIcon;
 
   return (
     <div
@@ -25,7 +32,7 @@ export function AgentWelcome({
       )}
     >
       <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
-        <BotIcon className="text-primary h-6 w-6" />
+        <IconComponent className="text-primary h-6 w-6" />
       </div>
       <div className="text-2xl font-bold">{displayName}</div>
       {description && (
