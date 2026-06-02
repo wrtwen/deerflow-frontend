@@ -9,6 +9,7 @@ owner filtering works automatically via the sentinel pattern.
 Fine-grained permission checks remain in authz.py decorators.
 """
 
+import os
 from collections.abc import Callable
 
 from fastapi import HTTPException, Request, Response
@@ -49,6 +50,17 @@ def _is_public(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in _PUBLIC_PATH_PREFIXES)
 
 
+class _MockUser:
+    """Synthetic user for DEER_FLOW_AUTH_DISABLED mode.
+
+    Satisfies the ``CurrentUser`` protocol (``id: str``) so that
+    ``set_current_user()`` and upstream context-dependent code work
+    without a real database-backed User row.
+    """
+
+    id: str = "e2e-user"
+
+
 class AuthMiddleware(BaseHTTPMiddleware):
     """Strict auth gate: reject requests without a valid session.
 
@@ -73,6 +85,21 @@ class AuthMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # ── Mock mode: DEER_FLOW_AUTH_DISABLED=1 ──
+        # Skip all authentication checks and inject a synthetic user.
+        # This mirrors the frontend's SSR bypass (core/auth/server.ts)
+        # and uses the same sentinel user id ("e2e-user") so that the
+        # frontend UserProvider recognises the mock context.
+        if os.getenv("DEER_FLOW_AUTH_DISABLED") == "1":
+            mock_user = _MockUser()
+            request.state.user = mock_user
+            request.state.auth = AuthContext(user=None, permissions=_ALL_PERMISSIONS)
+            token = set_current_user(mock_user)
+            try:
+                return await call_next(request)
+            finally:
+                reset_current_user(token)
+
         if _is_public(request.url.path):
             return await call_next(request)
 

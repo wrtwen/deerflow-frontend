@@ -11,6 +11,12 @@ const welcomeIcons: Record<string, React.ComponentType<{ className?: string }>> 
   "hazard-stats": BarChart3,
 };
 
+const welcomeDisplayNames: Record<string, string> = {
+  "hazard-intel": "隐患智能助手",
+  "hazard-input": "隐患录入助手",
+  "hazard-stats": "隐患统计分析助手",
+};
+
 export function AgentWelcome({
   className,
   agent,
@@ -20,23 +26,23 @@ export function AgentWelcome({
   agent: Agent | null | undefined;
   agentName: string;
 }) {
-  const displayName = agent?.display_name || agent?.name || agentName;
+  const displayName = agent?.display_name || agent?.name || welcomeDisplayNames[agentName] || agentName;
   const description = agent?.description;
   const IconComponent = welcomeIcons[agentName] ?? BotIcon;
 
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center justify-center gap-2 px-8 py-4 text-center",
+        "mx-auto flex w-full flex-col items-center justify-center gap-1.5 px-4 py-3 text-center sm:gap-2 sm:px-8 sm:py-4",
         className,
       )}
     >
-      <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
-        <IconComponent className="text-primary h-6 w-6" />
+      <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+        <IconComponent className="text-primary h-5 w-5 sm:h-6 sm:w-6" />
       </div>
-      <div className="text-2xl font-bold">{displayName}</div>
+      <div className="text-lg font-bold sm:text-2xl">{displayName}</div>
       {description && (
-        <p className="text-muted-foreground max-w-sm text-sm">{description}</p>
+        <p className="text-muted-foreground max-w-sm text-xs sm:text-sm">{description}</p>
       )}
     </div>
   );

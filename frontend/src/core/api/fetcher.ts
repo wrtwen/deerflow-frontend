@@ -1,5 +1,17 @@
 import { buildLoginUrl } from "@/core/auth/types";
 
+/** localStorage key used by dev-login PoC */
+const DEV_USER_KEY = "deerflow.dev-current-user";
+
+function isDevMode(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(DEV_USER_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** HTTP methods that the gateway's CSRFMiddleware checks. */
 export type StateChangingMethod = "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -81,7 +93,11 @@ export async function fetch(
   });
 
   if (res.status === 401) {
-    window.location.href = buildLoginUrl(window.location.pathname);
+    // In dev-login mode the backend has no session — skip the hard redirect
+    // to avoid an infinite loop (API 401 → /login → /workspace → API 401 → …).
+    if (!isDevMode()) {
+      window.location.href = buildLoginUrl(window.location.pathname);
+    }
     throw new Error("Unauthorized");
   }
 

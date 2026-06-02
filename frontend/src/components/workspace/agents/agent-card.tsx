@@ -26,6 +26,12 @@ const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = 
   "hazard-stats": BarChart3,
 };
 
+const agentDisplayNames: Record<string, string> = {
+  "hazard-intel": "隐患智能助手",
+  "hazard-input": "隐患录入助手",
+  "hazard-stats": "隐患统计分析助手",
+};
+
 export function AgentCard({ agent }: AgentCardProps) {
   const { t } = useI18n();
   const router = useRouter();
@@ -37,18 +43,18 @@ export function AgentCard({ agent }: AgentCardProps) {
 
   return (
     <Card className="group flex flex-col transition-shadow hover:shadow-md">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 max-sm:pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-              <AgentIcon className="h-5 w-5" />
+          <div className="flex items-center gap-2 max-sm:gap-1.5">
+            <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg max-sm:h-7 max-sm:w-7">
+              <AgentIcon className="h-5 w-5 max-sm:h-4 max-sm:w-4" />
             </div>
             <div className="min-w-0">
-              <CardTitle className="truncate text-base">
-                {agent.display_name || agent.name}
+              <CardTitle className="truncate text-base max-sm:text-sm">
+                {agent.display_name || agentDisplayNames[agent.name] || agent.name}
               </CardTitle>
               {agent.model && (
-                <Badge variant="secondary" className="mt-0.5 text-xs">
+                <Badge variant="secondary" className="mt-0.5 text-xs max-sm:hidden">
                   {agent.model}
                 </Badge>
               )}
@@ -56,14 +62,14 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
         {agent.description && (
-          <CardDescription className="mt-2 line-clamp-2 text-sm">
+          <CardDescription className="mt-2 line-clamp-2 text-sm max-sm:mt-1 max-sm:line-clamp-1 max-sm:text-xs">
             {agent.description}
           </CardDescription>
         )}
       </CardHeader>
 
       {(agent.tool_groups?.length ?? agent.skills?.length ?? 0) > 0 && (
-        <CardContent className="pt-0 pb-3">
+        <CardContent className="pt-0 pb-3 max-sm:hidden">
           <div className="flex flex-wrap gap-1">
             {agent.tool_groups?.map((group) => (
               <Badge
@@ -87,7 +93,7 @@ export function AgentCard({ agent }: AgentCardProps) {
         </CardContent>
       )}
 
-      <CardFooter className="mt-auto pt-3">
+      <CardFooter className="mt-auto pt-3 max-sm:pt-2">
         <Button size="sm" className="w-full" onClick={handleChat}>
           <MessageSquareIcon className="mr-1.5 h-3.5 w-3.5" />
           {t.agents.chat}

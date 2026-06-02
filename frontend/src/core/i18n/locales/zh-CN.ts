@@ -170,8 +170,8 @@ export const zhCN: Translations = {
 
   // Agents
   agents: {
-    title: "智能体",
-    description: "创建和管理具有专属 Prompt 与能力的自定义智能体。",
+    title: "AI 安全助手",
+    description: "选择智能助手，高效处理工厂安全隐患相关工作",
     newAgent: "新建智能体",
     emptyTitle: "还没有自定义智能体",
     emptyDescription: "创建你的第一个自定义智能体，设置专属系统提示词。",
@@ -332,7 +332,7 @@ export const zhCN: Translations = {
   // Settings
   settings: {
     title: "设置",
-    description: "根据你的偏好调整 DeerFlow 的界面和行为。",
+    description: "自定义界面外观和显示语言",
     sections: {
       account: "账号",
       appearance: "外观",

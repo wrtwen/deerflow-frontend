@@ -25,7 +25,6 @@ export function WorkspaceNavMenu() {
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
-        defaultSection="about"
       />
       <SidebarMenu className="w-full">
         <SidebarMenuItem>
@@ -34,7 +33,7 @@ export function WorkspaceNavMenu() {
             onClick={() => setSettingsOpen(true)}
           >
             <InfoIcon className="text-muted-foreground size-4" />
-            <span>关于</span>
+            <span>外观</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

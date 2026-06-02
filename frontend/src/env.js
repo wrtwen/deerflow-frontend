@@ -11,6 +11,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    DEER_FLOW_AUTH_DISABLED: z.string().optional(),
+    DEER_FLOW_INTERNAL_GATEWAY_BASE_URL: z.string().optional(),
+    DEER_FLOW_TRUSTED_ORIGINS: z.string().optional(),
   },
 
   /**
@@ -36,6 +39,10 @@ export const env = createEnv({
     NEXT_PUBLIC_STATIC_WEBSITE_ONLY:
       process.env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY,
     GITHUB_OAUTH_TOKEN: process.env.GITHUB_OAUTH_TOKEN,
+    DEER_FLOW_AUTH_DISABLED: process.env.DEER_FLOW_AUTH_DISABLED,
+    DEER_FLOW_INTERNAL_GATEWAY_BASE_URL:
+      process.env.DEER_FLOW_INTERNAL_GATEWAY_BASE_URL,
+    DEER_FLOW_TRUSTED_ORIGINS: process.env.DEER_FLOW_TRUSTED_ORIGINS,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

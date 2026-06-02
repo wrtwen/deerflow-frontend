@@ -177,9 +177,9 @@ export const enUS: Translations = {
 
   // Agents
   agents: {
-    title: "Agents",
+    title: "AI Safety Assistants",
     description:
-      "Create and manage custom agents with specialized prompts and capabilities.",
+      "Select an AI assistant to efficiently handle factory safety hazard tasks",
     newAgent: "New Agent",
     emptyTitle: "No custom agents yet",
     emptyDescription:

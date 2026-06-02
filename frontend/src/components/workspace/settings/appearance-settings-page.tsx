@@ -160,33 +160,33 @@ function ThemePreviewCard({
             : "border-slate-200 bg-white text-slate-900",
         )}
       >
-        <div className="border-border/50 flex items-center gap-2 border-b px-3 py-2">
+        <div className="border-border/50 flex items-center gap-1.5 border-b px-2.5 py-1.5">
           <div
             className={cn(
-              "h-2 w-2 rounded-full",
+              "h-1.5 w-1.5 rounded-full",
               previewMode === "dark" ? "bg-emerald-400" : "bg-emerald-500",
             )}
           />
-          <div className="h-2 w-10 rounded-full bg-current/20" />
-          <div className="h-2 w-6 rounded-full bg-current/15" />
+          <div className="h-1.5 w-8 rounded-full bg-current/20" />
+          <div className="h-1.5 w-5 rounded-full bg-current/15" />
         </div>
-        <div className="grid grid-cols-[1fr_240px] gap-3 px-3 py-3">
-          <div className="space-y-2">
-            <div className="h-3 w-3/4 rounded-full bg-current/15" />
-            <div className="h-3 w-1/2 rounded-full bg-current/10" />
-            <div className="h-[90px] rounded-md border border-current/10 bg-current/5" />
+        <div className="flex items-start gap-2 px-2.5 py-2">
+          <div className="flex-1 space-y-1.5">
+            <div className="h-2.5 w-3/4 rounded-full bg-current/15" />
+            <div className="h-2.5 w-1/2 rounded-full bg-current/10" />
+            <div className="h-14 rounded border border-current/10 bg-current/5" />
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-current/10" />
-              <div className="space-y-2">
-                <div className="h-2 w-14 rounded-full bg-current/15" />
-                <div className="h-2 w-10 rounded-full bg-current/10" />
+          <div className="w-24 shrink-0 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-5 shrink-0 rounded bg-current/10" />
+              <div className="space-y-1">
+                <div className="h-1.5 w-10 rounded-full bg-current/15" />
+                <div className="h-1.5 w-7 rounded-full bg-current/10" />
               </div>
             </div>
-            <div className="flex flex-col gap-1 rounded-md border border-dashed border-current/15 p-2">
-              <div className="h-2 w-3/5 rounded-full bg-current/15" />
-              <div className="h-2 w-2/5 rounded-full bg-current/10" />
+            <div className="flex flex-col gap-1 rounded border border-dashed border-current/15 p-1.5">
+              <div className="h-1.5 w-3/5 rounded-full bg-current/15" />
+              <div className="h-1.5 w-2/5 rounded-full bg-current/10" />
             </div>
           </div>
         </div>

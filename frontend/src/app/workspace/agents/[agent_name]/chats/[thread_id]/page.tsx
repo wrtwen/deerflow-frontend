@@ -27,6 +27,7 @@ import { useLocalSettings, useThreadSettings } from "@/core/settings";
 import { useThreadStream } from "@/core/threads/hooks";
 import { textOfMessage } from "@/core/threads/utils";
 import { env } from "@/env";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -35,8 +36,15 @@ const agentIcons: Record<string, React.ComponentType<{ className?: string }>> = 
   "hazard-stats": BarChart3,
 };
 
+const agentDisplayNames: Record<string, string> = {
+  "hazard-intel": "隐患智能助手",
+  "hazard-input": "隐患录入助手",
+  "hazard-stats": "隐患统计分析助手",
+};
+
 export default function AgentChatPage() {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const [showFollowups, setShowFollowups] = useState(false);
 
   const { agent_name } = useParams<{
@@ -92,9 +100,11 @@ export default function AgentChatPage() {
 
   const handleSubmit = useCallback(
     (message: PromptInputMessage) => {
+      // 立即移到底部，不等后端响应
+      if (isNewThread) setIsNewThread(false);
       void sendMessage(threadId, message, { agent_name });
     },
-    [sendMessage, threadId, agent_name],
+    [sendMessage, threadId, agent_name, isNewThread, setIsNewThread],
   );
 
   const handleStop = useCallback(async () => {
@@ -125,7 +135,7 @@ export default function AgentChatPage() {
             <div className="flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1">
               <AgentIcon className="text-primary h-3.5 w-3.5" />
               <span className="text-xs font-medium">
-                {agent?.display_name || agent?.name || agent_name}
+                {agent?.display_name || agent?.name || agentDisplayNames[agent_name] || agent_name}
               </span>
             </div>
 
@@ -160,11 +170,14 @@ export default function AgentChatPage() {
               />
             </div>
 
-            <div className="absolute right-0 bottom-0 left-0 z-30 flex justify-center px-4">
+            <div className="absolute right-0 bottom-0 left-0 z-30 flex justify-center px-2 sm:px-4">
               <div
                 className={cn(
                   "relative w-full",
-                  isNewThread && "-translate-y-[calc(50vh-96px)]",
+                  isNewThread &&
+                    (isMobile
+                      ? "-translate-y-[calc(20vh-48px)]"
+                      : "-translate-y-[calc(35vh-96px)]"),
                   isNewThread
                     ? "max-w-(--container-width-sm)"
                     : "max-w-(--container-width-md)",

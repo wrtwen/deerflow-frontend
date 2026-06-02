@@ -18,6 +18,12 @@ import type { UploadedFileInfo } from "../uploads";
 import { promptInputFilePartToFile, uploadFiles } from "../uploads";
 
 import type { AgentThread, AgentThreadState, RunMessage } from "./types";
+import {
+  getDefaultUserId,
+  isStorageAvailable,
+  saveChat,
+  type LocalChatRecord,
+} from "./history-storage";
 
 export type ToolEndEvent = {
   name: string;
@@ -274,6 +280,21 @@ export function useThreadStream({
     },
     onFinish(state) {
       listeners.current.onFinish?.(state.values);
+
+      // ── 对话历史持久化（PoC）─────────────────────────
+      // SSO 后：getDefaultUserId() → useUser().userId
+      const tId = threadIdRef.current;
+      if (tId && isStorageAvailable()) {
+        const record: LocalChatRecord = {
+          threadId: tId,
+          agentName: (context.agent_name as string | undefined) ?? "",
+          title: (state.values.title as string) ?? "",
+          messages: (state.values.messages as Message[]) ?? [],
+          createdAt: new Date().toISOString(),
+        };
+        saveChat(getDefaultUserId(), record);
+      }
+
       void queryClient.invalidateQueries({ queryKey: ["threads", "search"] });
     },
   });

@@ -3,6 +3,8 @@
 import type { ChatStatus } from "ai";
 import {
   CameraIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   ImageIcon,
   MicIcon,
   PaperclipIcon,
@@ -125,6 +127,7 @@ export function InputBox({
   const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(
     null,
   );
+  const [suggestionsHidden, setSuggestionsHidden] = useState(false);
 
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
@@ -329,6 +332,33 @@ export function InputBox({
           </div>
         </div>
       )}
+      {extraHeader && (
+        <div className="flex items-center justify-center">
+          {extraHeader}
+        </div>
+      )}
+      {isWelcomeMode && searchParams.get("mode") !== "skill" && (
+        <div className="flex flex-col items-center gap-1 pb-2">
+          {!suggestionsHidden && <SuggestionList />}
+          <button
+            type="button"
+            onClick={() => setSuggestionsHidden((v) => !v)}
+            className="text-muted-foreground/40 hover:text-muted-foreground flex cursor-pointer items-center gap-0.5 text-xs transition-colors"
+          >
+            {suggestionsHidden ? (
+              <>
+                <ChevronDownIcon className="size-3" />
+                展开
+              </>
+            ) : (
+              <>
+                <ChevronUpIcon className="size-3" />
+                收起
+              </>
+            )}
+          </button>
+        </div>
+      )}
       <PromptInput
         className={cn(
           "bg-background/85 rounded-2xl backdrop-blur-sm transition-all duration-300 ease-out *:data-[slot='input-group']:rounded-2xl",
@@ -340,13 +370,6 @@ export function InputBox({
         onSubmit={handleSubmit}
         {...props}
       >
-        {extraHeader && (
-          <div className="absolute top-0 right-0 left-0 z-10">
-            <div className="absolute right-0 bottom-0 left-0 flex items-center justify-center">
-              {extraHeader}
-            </div>
-          </div>
-        )}
         <PromptInputAttachments>
           {(attachment) => <PromptInputAttachment data={attachment} />}
         </PromptInputAttachments>
@@ -375,12 +398,6 @@ export function InputBox({
           <div className="bg-background absolute right-0 -bottom-[17px] left-0 z-0 h-4"></div>
         )}
       </PromptInput>
-
-      {isWelcomeMode && searchParams.get("mode") !== "skill" && (
-        <div className="flex items-center justify-center pt-2">
-          <SuggestionList />
-        </div>
-      )}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
@@ -565,6 +582,7 @@ function VoiceInputButton() {
   const [isListening, setIsListening] = useState(false);
   const [supported, setSupported] = useState(true);
   const [statusText, setStatusText] = useState<string | null>(null);
+  const [hintDismissed, setHintDismissed] = useState(false);
   const recognitionRef = useRef<any>(null);
   const textBeforeSpeechRef = useRef("");
   const gotResultRef = useRef(false);
@@ -577,6 +595,21 @@ function VoiceInputButton() {
     }
   };
 
+  // 点击输入框后自动隐藏键盘麦克风提示
+  useEffect(() => {
+    const textarea = document.querySelector<HTMLTextAreaElement>(
+      "textarea[name='message']",
+    );
+    if (!textarea) return;
+    const handleFocus = () => setHintDismissed(true);
+    textarea.addEventListener("focus", handleFocus);
+    textarea.addEventListener("click", handleFocus);
+    return () => {
+      textarea.removeEventListener("focus", handleFocus);
+      textarea.removeEventListener("click", handleFocus);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -585,7 +618,7 @@ function VoiceInputButton() {
       (window as any).webkitSpeechRecognition;
     if (!SR) {
       setSupported(false);
-      setStatusText("浏览器不支持语音识别");
+      if (!hintDismissed) setStatusText("浏览器不支持语音识别");
       return;
     }
 
@@ -599,13 +632,11 @@ function VoiceInputButton() {
       gotResultRef.current = false;
       setStatusText("正在录音，请说话...");
 
-      // 5秒无识别结果则超时提示
       clearNoResultTimer();
       noResultTimerRef.current = setTimeout(() => {
         if (!gotResultRef.current) {
-          setStatusText("请使用键盘麦克风");
           setIsListening(false);
-          setSupported(false);
+          if (!hintDismissed) setStatusText("点击使用键盘麦克风");
           try {
             recognition.stop();
           } catch {
@@ -618,6 +649,9 @@ function VoiceInputButton() {
     recognition.onend = () => {
       setIsListening(false);
       clearNoResultTimer();
+      if (statusText?.includes("录音") || statusText?.includes("识别")) {
+        setStatusText(null);
+      }
     };
 
     recognition.onresult = (event: any) => {
@@ -656,20 +690,20 @@ function VoiceInputButton() {
       setIsListening(false);
       clearNoResultTimer();
       if (event.error === "not-allowed") {
-        setStatusText("麦克风权限被拒绝");
+        if (!hintDismissed) setStatusText("麦克风权限被拒绝");
         setSupported(false);
         toast.error("麦克风权限被拒绝，请使用键盘麦克风输入");
       } else if (event.error === "no-speech") {
-        setStatusText("未检测到语音");
+        if (!hintDismissed) setStatusText("未检测到语音");
         toast.error("未检测到语音，请靠近麦克风再试");
       } else {
-        setStatusText(`语音识别出错: ${event.error}`);
+        if (!hintDismissed) setStatusText(`语音识别出错: ${event.error}`);
         toast.error(`语音识别不可用: ${event.error}`);
       }
     };
 
     if (window.isSecureContext === false) {
-      setStatusText("点击使用键盘麦克风");
+      if (!hintDismissed) setStatusText("点击使用键盘麦克风");
       setSupported(false);
     }
 
@@ -677,11 +711,11 @@ function VoiceInputButton() {
 
     return () => {
       clearNoResultTimer();
-      recognition.stop();
+      try { recognition.stop(); } catch { /* ignore */ }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggleListening = useCallback(() => {
+  const startListening = useCallback(() => {
     if (!supported) {
       const textarea = document.querySelector<HTMLTextAreaElement>(
         "textarea[name='message']",
@@ -689,33 +723,39 @@ function VoiceInputButton() {
       textarea?.focus();
       return;
     }
-    if (!recognitionRef.current) return;
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      textBeforeSpeechRef.current = controllerRef.current.textInput.value;
-      recognitionRef.current.start();
-    }
+    if (!recognitionRef.current || isListening) return;
+    textBeforeSpeechRef.current = controllerRef.current.textInput.value;
+    recognitionRef.current.start();
   }, [isListening, supported]);
 
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+    }
+  }, [isListening]);
+
   const tooltipText = isListening
-    ? "点击停止"
+    ? "松开停止"
     : supported
-      ? "语音输入"
+      ? "按住说话"
       : "使用键盘麦克风输入";
 
   return (
     <div className="relative inline-flex">
-      {statusText && (
+      {statusText && !hintDismissed && (
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-nowrap rounded-full bg-background px-3 py-1 text-xs text-muted-foreground shadow-sm ring-1 ring-border/50">
           {statusText}
         </div>
       )}
       <Tooltip content={tooltipText}>
         <PromptInputButton
-          onClick={toggleListening}
+          onMouseDown={(e) => { e.preventDefault(); startListening(); }}
+          onMouseUp={stopListening}
+          onMouseLeave={stopListening}
+          onTouchStart={(e) => { e.preventDefault(); startListening(); }}
+          onTouchEnd={(e) => { e.preventDefault(); stopListening(); }}
           className={cn(
-            "relative transition-all duration-200",
+            "relative transition-all duration-200 select-none",
             isListening && "text-destructive animate-pulse",
             !supported && "opacity-40",
           )}

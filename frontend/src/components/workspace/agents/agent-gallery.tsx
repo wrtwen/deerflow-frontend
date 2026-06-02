@@ -2,27 +2,29 @@
 
 import { BotIcon } from "lucide-react";
 
-import { useAgents } from "@/core/agents";
+import { useFilteredAgents } from "@/core/agents";
 import { useI18n } from "@/core/i18n/hooks";
+import { useUser } from "@/core/user";
 
 import { AgentCard } from "./agent-card";
 
 export function AgentGallery() {
   const { t } = useI18n();
-  const { agents, isLoading } = useAgents();
+  const { user } = useUser();
+  const { agents, isLoading } = useFilteredAgents(user?.role);
 
   return (
     <div className="flex size-full flex-col">
       {/* Page header */}
-      <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-semibold">{t.agents.title}</h1>
-        <p className="text-muted-foreground mt-0.5 text-sm">
+      <div className="border-b px-4 py-3 sm:px-6 sm:py-4">
+        <h1 className="text-lg font-semibold sm:text-xl">{t.agents.title}</h1>
+        <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
           {t.agents.description}
         </p>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         {isLoading ? (
           <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
             {t.common.loading}
@@ -40,7 +42,7 @@ export function AgentGallery() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {agents.map((agent) => (
               <AgentCard key={agent.name} agent={agent} />
             ))}

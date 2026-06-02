@@ -47,6 +47,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  /** Track whether we started in mock mode (DEER_FLOW_AUTH_DISABLED) */
+  const isMockMode = React.useRef(initialUser?.id === "e2e-user");
+
   const isAuthenticated = user !== null;
 
   /**
@@ -54,6 +57,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
    * Used when initialUser might be stale (e.g., after tab was inactive)
    */
   const refreshUser = useCallback(async () => {
+    // In mock mode, never call the backend auth endpoint — it will
+    // return 401 and trigger a redirect loop.
+    if (isMockMode.current) return;
+
     try {
       setIsLoading(true);
       const res = await fetch("/api/v1/auth/me", {
@@ -87,14 +94,17 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     // Immediately clear local state to prevent UI flicker
     setUser(null);
 
-    try {
-      await fetch("/api/v1/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error("Logout request failed:", err);
-      // Still redirect even if logout request fails
+    // In mock mode, skip the backend call — there is no real session.
+    if (!isMockMode.current) {
+      try {
+        await fetch("/api/v1/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (err) {
+        console.error("Logout request failed:", err);
+        // Still redirect even if logout request fails
+      }
     }
 
     // Redirect to home page
