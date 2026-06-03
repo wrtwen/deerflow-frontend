@@ -1,3 +1,5 @@
+"use client";
+
 import type { AIMessage, Message, Run } from "@langchain/langgraph-sdk";
 import type { ThreadsClient } from "@langchain/langgraph-sdk/client";
 import { useStream } from "@langchain/langgraph-sdk/react";
@@ -24,7 +26,7 @@ import {
   saveChat,
   type LocalChatRecord,
 } from "./history-storage";
-import { saveChatComplete } from "./chat-persistence";
+import { saveChatCompleteAction } from "./server-actions";
 
 export type ToolEndEvent = {
   name: string;
@@ -293,11 +295,11 @@ export function useThreadStream({
           createdAt: new Date().toISOString(),
         };
         const userId = getDefaultUserId();
-        // 异步写入 PostgreSQL，不阻塞 UI
-        saveChatComplete(userId, record).catch((err) => {
-          console.warn("[hooks] saveChatComplete failed:", err);
+        // 异步写入 PostgreSQL（Server Action，不阻塞 UI）
+        saveChatCompleteAction(userId, record).catch((err) => {
+          console.warn("[hooks] saveChatCompleteAction failed:", err);
         });
-        // localStorage 同步保留作为快速缓存（由 saveChatComplete 内部处理）
+        // localStorage 同步保留作为快速缓存
         if (isStorageAvailable()) {
           saveChat(userId, record);
         }

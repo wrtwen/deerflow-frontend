@@ -11,10 +11,8 @@ export {
   type LocalChatRecord,
 } from "./history-storage";
 export {
-  saveChatComplete,
-  getChatHistory,
-  getRecentSessions,
-  getSessionMessages,
-  getChatMessagesByThreadId,
+  saveChatCompleteAction as saveChatComplete,
+  getChatHistoryAction as getChatHistory,
+  getChatMessagesByThreadIdAction as getChatMessagesByThreadId,
   type ChatSessionSummary,
-} from "./chat-persistence";
+} from "./server-actions";

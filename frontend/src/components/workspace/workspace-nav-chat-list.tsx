@@ -14,10 +14,13 @@ import {
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/core/i18n/hooks";
 import {
-  getChatHistory,
+  getChatHistoryAction,
   type ChatSessionSummary,
-} from "@/core/threads/chat-persistence";
-import { getDefaultUserId } from "@/core/threads/history-storage";
+} from "@/core/threads/server-actions";
+import {
+  getDefaultUserId,
+  getChatHistory as getLocalChatHistory,
+} from "@/core/threads/history-storage";
 
 export function WorkspaceNavChatList() {
   const { t } = useI18n();
@@ -26,10 +29,28 @@ export function WorkspaceNavChatList() {
 
   useEffect(() => {
     const userId = getDefaultUserId();
-    getChatHistory(userId)
+    getChatHistoryAction(userId)
       .then(setRecentChats)
-      .catch(() => {
-        // fallback 到 localStorage 已由 getChatHistory 内部处理
+      .catch((err) => {
+        console.warn("[nav-chat-list] PostgreSQL unavailable, falling back to localStorage:", err);
+        // fallback 到 localStorage
+        const localChats = getLocalChatHistory(userId);
+        const summaries: ChatSessionSummary[] = localChats.map((c) => {
+          const lastMsg = c.messages.length > 0 ? c.messages[c.messages.length - 1] : undefined;
+          return {
+            sessionId: c.threadId,
+            threadId: c.threadId,
+            agentName: c.agentName,
+            title: c.title || "新对话",
+            messageCount: c.messages.length,
+            lastMessage:
+              lastMsg && typeof lastMsg.content === "string"
+                ? lastMsg.content.slice(0, 100)
+                : null,
+            updatedAt: c.createdAt,
+          };
+        });
+        setRecentChats(summaries);
       });
   }, []);
 
