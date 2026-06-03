@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const username = searchParams.get("username");
 
     if (id) {
-      const user = await getUserById(Number(id));
+      const user = await getUserById(id);
       if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
@@ -74,7 +74,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const count = await deleteUser(Number(id));
+    const count = await deleteUser(id);
     if (count === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

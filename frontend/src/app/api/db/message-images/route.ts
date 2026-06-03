@@ -13,11 +13,11 @@ export async function GET(request: Request) {
     const sessionId = searchParams.get("session_id");
 
     if (messageId) {
-      const images = await getImagesByMessage(Number(messageId));
+      const images = await getImagesByMessage(messageId);
       return NextResponse.json(images);
     }
     if (sessionId) {
-      const images = await getImagesBySession(Number(sessionId));
+      const images = await getImagesBySession(sessionId);
       return NextResponse.json(images);
     }
 
@@ -69,7 +69,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const count = await deleteImage(Number(id));
+    const count = await deleteImage(id);
     if (count === 0)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ deleted: count });

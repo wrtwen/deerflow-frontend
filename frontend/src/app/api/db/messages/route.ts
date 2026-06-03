@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     // 全文搜索
     if (search) {
-      const sid = sessionId ? Number(sessionId) : undefined;
+      const sid = sessionId || undefined;
       const messages = await searchMessages(search, sid, limit, offset);
       return NextResponse.json(messages);
     }
@@ -25,8 +25,8 @@ export async function GET(request: Request) {
     // 按会话分页查询
     if (sessionId) {
       const [messages, total] = await Promise.all([
-        listMessagesBySession(Number(sessionId), limit, offset),
-        countMessages(Number(sessionId)),
+        listMessagesBySession(sessionId, limit, offset),
+        countMessages(sessionId),
       ]);
       return NextResponse.json({ messages, total });
     }
@@ -86,7 +86,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const count = await deleteMessage(Number(id));
+    const count = await deleteMessage(id);
     if (count === 0)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ deleted: count });

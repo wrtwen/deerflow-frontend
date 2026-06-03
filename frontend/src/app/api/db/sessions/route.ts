@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const offset = Number(searchParams.get("offset") ?? 0);
 
     if (id) {
-      const session = await getSessionById(Number(id));
+      const session = await getSessionById(id);
       if (!session)
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       return NextResponse.json(session);
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       return NextResponse.json(session);
     }
     if (userId) {
-      const sessions = await listSessionsByUser(Number(userId), limit, offset);
+      const sessions = await listSessionsByUser(userId, limit, offset);
       return NextResponse.json(sessions);
     }
 
@@ -107,7 +107,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const count = await deleteSession(Number(id));
+    const count = await deleteSession(id);
     if (count === 0)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ deleted: count });

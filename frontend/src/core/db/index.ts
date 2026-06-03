@@ -1,7 +1,7 @@
 export { query, queryOne, execute, healthCheck, getClient } from "./connection";
 export type { UserRow } from "./users";
 export type { SessionRow } from "./sessions";
-export type { MessageRow } from "./messages";
+export type { MessageRow, MessageInput } from "./messages";
 export type { ImageRow } from "./images";
 
 export {
@@ -11,12 +11,15 @@ export {
 
 export {
   getSessionById, getSessionByThreadId, listSessionsByUser,
+  listRecentSessions, upsertSession,
   createSession, updateSession, deleteSession,
 } from "./sessions";
 
 export {
-  getMessageById, listMessagesBySession, countMessages,
-  searchMessages, createMessage, deleteMessage, deleteMessagesBySession,
+  getMessageById, listMessagesBySession, listRecentMessages,
+  countMessages, searchMessages,
+  createMessage, batchInsertMessages,
+  deleteMessage, deleteMessagesBySession,
 } from "./messages";
 
 export {

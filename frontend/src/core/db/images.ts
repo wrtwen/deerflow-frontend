@@ -1,51 +1,55 @@
 import { query, queryOne, execute } from "./connection";
 
 export interface ImageRow {
-  id: number;
-  message_id: number;
-  image_url: string;
+  id: string;          // UUID
+  message_id: string;  // UUID
+  file_url: string;
   file_name: string | null;
-  uploaded_at: string;
+  file_type: string | null;
+  file_size: number | null;
+  created_at: string;
 }
 
 export async function getImagesByMessage(
-  messageId: number,
+  messageId: string,
 ): Promise<ImageRow[]> {
   return query<ImageRow>(
-    "SELECT * FROM message_images WHERE message_id = $1 ORDER BY uploaded_at ASC",
+    "SELECT * FROM message_attachments WHERE message_id = $1 ORDER BY created_at ASC",
     [messageId],
   );
 }
 
 export async function getImagesBySession(
-  sessionId: number,
+  sessionId: string,
 ): Promise<ImageRow[]> {
   return query<ImageRow>(
-    `SELECT mi.* FROM message_images mi
-     JOIN messages m ON m.id = mi.message_id
+    `SELECT ma.* FROM message_attachments ma
+     JOIN chat_messages m ON m.id = ma.message_id
      WHERE m.session_id = $1
-     ORDER BY mi.uploaded_at ASC`,
+     ORDER BY ma.created_at ASC`,
     [sessionId],
   );
 }
 
 export async function addImage(
-  messageId: number,
+  messageId: string,
   imageUrl: string,
   fileName?: string,
+  fileType?: string,
+  fileSize?: number,
 ): Promise<ImageRow> {
   const row = await queryOne<ImageRow>(
-    `INSERT INTO message_images (message_id, image_url, file_name)
-     VALUES ($1, $2, $3) RETURNING *`,
-    [messageId, imageUrl, fileName ?? null],
+    `INSERT INTO message_attachments (message_id, file_url, file_name, file_type, file_size)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [messageId, imageUrl, fileName ?? null, fileType ?? null, fileSize ?? null],
   );
   return row!;
 }
 
-export async function deleteImage(id: number): Promise<number> {
-  return execute("DELETE FROM message_images WHERE id = $1", [id]);
+export async function deleteImage(id: string): Promise<number> {
+  return execute("DELETE FROM message_attachments WHERE id = $1", [id]);
 }
 
-export async function deleteImagesByMessage(messageId: number): Promise<number> {
-  return execute("DELETE FROM message_images WHERE message_id = $1", [messageId]);
+export async function deleteImagesByMessage(messageId: string): Promise<number> {
+  return execute("DELETE FROM message_attachments WHERE message_id = $1", [messageId]);
 }

@@ -1,7 +1,7 @@
 export * from "./types";
 export {
   saveChat,
-  getChatHistory,
+  getChatHistory as getLocalChatHistory,
   getChat,
   deleteChat,
   clearHistory,
@@ -10,3 +10,11 @@ export {
   getDefaultUserId,
   type LocalChatRecord,
 } from "./history-storage";
+export {
+  saveChatComplete,
+  getChatHistory,
+  getRecentSessions,
+  getSessionMessages,
+  getChatMessagesByThreadId,
+  type ChatSessionSummary,
+} from "./chat-persistence";

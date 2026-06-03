@@ -24,6 +24,7 @@ import {
   saveChat,
   type LocalChatRecord,
 } from "./history-storage";
+import { saveChatComplete } from "./chat-persistence";
 
 export type ToolEndEvent = {
   name: string;
@@ -281,10 +282,9 @@ export function useThreadStream({
     onFinish(state) {
       listeners.current.onFinish?.(state.values);
 
-      // ── 对话历史持久化（PoC）─────────────────────────
-      // SSO 后：getDefaultUserId() → useUser().userId
+      // ── 对话历史持久化（PostgreSQL + localStorage 缓存）─
       const tId = threadIdRef.current;
-      if (tId && isStorageAvailable()) {
+      if (tId) {
         const record: LocalChatRecord = {
           threadId: tId,
           agentName: (context.agent_name as string | undefined) ?? "",
@@ -292,7 +292,15 @@ export function useThreadStream({
           messages: (state.values.messages as Message[]) ?? [],
           createdAt: new Date().toISOString(),
         };
-        saveChat(getDefaultUserId(), record);
+        const userId = getDefaultUserId();
+        // 异步写入 PostgreSQL，不阻塞 UI
+        saveChatComplete(userId, record).catch((err) => {
+          console.warn("[hooks] saveChatComplete failed:", err);
+        });
+        // localStorage 同步保留作为快速缓存（由 saveChatComplete 内部处理）
+        if (isStorageAvailable()) {
+          saveChat(userId, record);
+        }
       }
 
       void queryClient.invalidateQueries({ queryKey: ["threads", "search"] });
