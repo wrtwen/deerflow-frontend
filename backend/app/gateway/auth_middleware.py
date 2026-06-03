@@ -93,7 +93,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if os.getenv("DEER_FLOW_AUTH_DISABLED") == "1":
             mock_user = _MockUser()
             request.state.user = mock_user
-            request.state.auth = AuthContext(user=None, permissions=_ALL_PERMISSIONS)
+            # Per RFC-001 §AuthContext: user must be a real object so that
+            # is_authenticated / require_user / require_permission all pass.
+            request.state.auth = AuthContext(user=mock_user, permissions=_ALL_PERMISSIONS)
             token = set_current_user(mock_user)
             try:
                 return await call_next(request)

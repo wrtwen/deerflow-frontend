@@ -173,6 +173,13 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # ── Dev mode: DEER_FLOW_AUTH_DISABLED=1 ──
+        # In dev-login mode no real authentication happens, so no csrf_token
+        # cookie is ever set. Skip CSRF validation entirely to match the
+        # AuthMiddleware bypass behaviour.
+        if os.getenv("DEER_FLOW_AUTH_DISABLED") == "1":
+            return await call_next(request)
+
         _is_auth = is_auth_endpoint(request)
 
         if should_check_csrf(request) and _is_auth and not is_allowed_auth_origin(request):

@@ -109,6 +109,8 @@ services:
       - DEER_FLOW_INTERNAL_GATEWAY_BASE_URL=http://gateway:8001
     env_file:
       - ../frontend/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - deer-flow-dev
     restart: unless-stopped

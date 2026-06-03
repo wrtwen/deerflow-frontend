@@ -14,6 +14,7 @@ export const env = createEnv({
     DEER_FLOW_AUTH_DISABLED: z.string().optional(),
     DEER_FLOW_INTERNAL_GATEWAY_BASE_URL: z.string().optional(),
     DEER_FLOW_TRUSTED_ORIGINS: z.string().optional(),
+    DATABASE_URL: z.string().optional(),
   },
 
   /**
@@ -43,6 +44,7 @@ export const env = createEnv({
     DEER_FLOW_INTERNAL_GATEWAY_BASE_URL:
       process.env.DEER_FLOW_INTERNAL_GATEWAY_BASE_URL,
     DEER_FLOW_TRUSTED_ORIGINS: process.env.DEER_FLOW_TRUSTED_ORIGINS,
+    DATABASE_URL: process.env.DATABASE_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
