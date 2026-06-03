@@ -6,7 +6,9 @@ export {
   deleteChat,
   clearHistory,
   isStorageAvailable,
+  /** @deprecated 使用 AppUser.userId（从 useUser() 获取） */
   setDefaultUserId,
+  /** @deprecated 使用 AppUser.userId（从 useUser() 获取） */
   getDefaultUserId,
   type LocalChatRecord,
 } from "./history-storage";

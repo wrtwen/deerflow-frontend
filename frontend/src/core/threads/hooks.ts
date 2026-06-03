@@ -19,9 +19,10 @@ import { useUpdateSubtask } from "../tasks/context";
 import type { UploadedFileInfo } from "../uploads";
 import { promptInputFilePartToFile, uploadFiles } from "../uploads";
 
+import { useUser } from "@/core/user";
+
 import type { AgentThread, AgentThreadState, RunMessage } from "./types";
 import {
-  getDefaultUserId,
   isStorageAvailable,
   saveChat,
   type LocalChatRecord,
@@ -117,6 +118,7 @@ export function useThreadStream({
   onToolEnd,
 }: ThreadStreamOptions) {
   const { t } = useI18n();
+  const { user: currentUser } = useUser();
   // Track the thread ID that is currently streaming to handle thread changes during streaming
   const [onStreamThreadId, setOnStreamThreadId] = useState(() => threadId);
   // Ref to track current thread ID across async callbacks without causing re-renders,
@@ -286,7 +288,8 @@ export function useThreadStream({
 
       // ── 对话历史持久化（PostgreSQL + localStorage 缓存）─
       const tId = threadIdRef.current;
-      if (tId) {
+      if (tId && currentUser) {
+        const businessUserId = currentUser.userId;
         const record: LocalChatRecord = {
           threadId: tId,
           agentName: (context.agent_name as string | undefined) ?? "",
@@ -294,15 +297,21 @@ export function useThreadStream({
           messages: (state.values.messages as Message[]) ?? [],
           createdAt: new Date().toISOString(),
         };
-        const userId = getDefaultUserId();
-        // 异步写入 PostgreSQL（Server Action，不阻塞 UI）
-        saveChatCompleteAction(userId, record).catch((err) => {
-          console.warn("[hooks] saveChatCompleteAction failed:", err);
+        // 异步写入 PostgreSQL（Server Action，服务端解析 PG UUID）
+        saveChatCompleteAction(businessUserId, record).catch((err) => {
+          console.error(
+            `[hooks] saveChatCompleteAction FAILED for user=${businessUserId}:`,
+            err,
+          );
         });
-        // localStorage 同步保留作为快速缓存
+        // localStorage 同步保留作为快速缓存（按业务用户隔离）
         if (isStorageAvailable()) {
-          saveChat(userId, record);
+          saveChat(businessUserId, record);
         }
+      } else if (tId && !currentUser) {
+        console.warn(
+          "[hooks] Skipping chat persistence: no current user (UserProvider not ready?)",
+        );
       }
 
       void queryClient.invalidateQueries({ queryKey: ["threads", "search"] });

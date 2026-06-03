@@ -13,46 +13,57 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/core/i18n/hooks";
+import { useUser } from "@/core/user";
 import {
   getChatHistoryAction,
   type ChatSessionSummary,
 } from "@/core/threads/server-actions";
 import {
-  getDefaultUserId,
   getChatHistory as getLocalChatHistory,
 } from "@/core/threads/history-storage";
 
 export function WorkspaceNavChatList() {
   const { t } = useI18n();
   const pathname = usePathname();
+  const { user: currentUser } = useUser();
   const [recentChats, setRecentChats] = useState<ChatSessionSummary[]>([]);
 
   useEffect(() => {
-    const userId = getDefaultUserId();
-    getChatHistoryAction(userId)
+    if (!currentUser) return;
+    const businessUserId = currentUser.userId;
+
+    getChatHistoryAction(businessUserId)
       .then(setRecentChats)
       .catch((err) => {
-        console.warn("[nav-chat-list] PostgreSQL unavailable, falling back to localStorage:", err);
-        // fallback 到 localStorage
-        const localChats = getLocalChatHistory(userId);
-        const summaries: ChatSessionSummary[] = localChats.map((c) => {
-          const lastMsg = c.messages.length > 0 ? c.messages[c.messages.length - 1] : undefined;
-          return {
-            sessionId: c.threadId,
-            threadId: c.threadId,
-            agentName: c.agentName,
-            title: c.title || "新对话",
-            messageCount: c.messages.length,
-            lastMessage:
-              lastMsg && typeof lastMsg.content === "string"
-                ? lastMsg.content.slice(0, 100)
-                : null,
-            updatedAt: c.createdAt,
-          };
-        });
-        setRecentChats(summaries);
+        console.warn(
+          `[nav-chat-list] PostgreSQL unavailable for user=${businessUserId}, falling back to localStorage:`,
+          err,
+        );
+        // fallback 到 localStorage（按业务用户隔离）
+        try {
+          const localChats = getLocalChatHistory(businessUserId);
+          const summaries: ChatSessionSummary[] = localChats.map((c) => {
+            const lastMsg = c.messages.length > 0 ? c.messages[c.messages.length - 1] : undefined;
+            return {
+              sessionId: c.threadId,
+              threadId: c.threadId,
+              agentName: c.agentName,
+              title: c.title || "新对话",
+              messageCount: c.messages.length,
+              lastMessage:
+                lastMsg && typeof lastMsg.content === "string"
+                  ? lastMsg.content.slice(0, 100)
+                  : null,
+              updatedAt: c.createdAt,
+            };
+          });
+          setRecentChats(summaries);
+        } catch (localErr) {
+          console.error("[nav-chat-list] localStorage fallback also failed:", localErr);
+          setRecentChats([]);
+        }
       });
-  }, []);
+  }, [currentUser]);
 
   return (
     <SidebarGroup>

@@ -22,9 +22,10 @@ import {
   type MessageInput,
   type MessageRow,
 } from "@/core/db/messages";
+import { resolvePgUserId } from "@/core/user/user-id-map";
 import type { LocalChatRecord } from "./history-storage";
 
-// ── 类型（与 chat-persistence.ts 相同）──────────────
+// ── 类型 ──────────────────────────────────────────
 
 export interface ChatSessionSummary {
   sessionId: string;
@@ -36,23 +37,32 @@ export interface ChatSessionSummary {
   updatedAt: string;
 }
 
-// ── Session ────────────────────────────────────────
+// ── 内部工具 ──────────────────────────────────────
+
+function formatError(err: unknown): string {
+  if (err instanceof Error) {
+    return `${err.name}: ${err.message}\n${err.stack ?? ""}`;
+  }
+  return String(err);
+}
+
+// ── Session ───────────────────────────────────────
 
 async function ensureSession(
-  userId: string,
+  pgUserId: string,
   threadId: string,
   agentName?: string,
   title?: string,
 ): Promise<SessionRow> {
-  return upsertSession(userId, threadId, agentName, title);
+  return upsertSession(pgUserId, threadId, agentName, title);
 }
 
-// ── Messages ───────────────────────────────────────
+// ── Messages ──────────────────────────────────────
 
 async function saveMessages(
   sessionId: string,
   messages: Message[],
-  userId?: string | null,
+  pgUserId?: string | null,
 ): Promise<MessageRow[]> {
   const inputs: MessageInput[] = messages.map((m) => {
     const role: MessageInput["role"] =
@@ -79,7 +89,7 @@ async function saveMessages(
     }
 
     return {
-      user_id: userId,
+      user_id: pgUserId,
       role,
       content,
       metadata: { type: m.type },
@@ -89,48 +99,90 @@ async function saveMessages(
   return batchInsertMessages(sessionId, inputs);
 }
 
-// ── 完整保存 ───────────────────────────────────────
+// ── 完整保存 ──────────────────────────────────────
 
 /**
- * 保存完整对话记录（session + messages）到 PostgreSQL。
- * 客户端通过 Server Action RPC 调用，在服务端执行数据库操作。
+ * 保存完整对话记录到 PostgreSQL。
+ *
+ * @param businessUserId - 业务用户 ID（如 "u-001", "u-002"）
+ *                         由 Server Action 在服务端解析为 PostgreSQL UUID
+ * @param record - 聊天记录
+ * @throws 若无法解析 PG UUID 或 DB 写入失败
  */
 export async function saveChatCompleteAction(
-  userId: string,
+  businessUserId: string,
   record: LocalChatRecord,
 ): Promise<void> {
+  // 1. 解析 PG UUID
+  const pgUserId = resolvePgUserId(businessUserId);
+  if (!pgUserId) {
+    const msg = `[server-actions] Cannot resolve PostgreSQL UUID for business user: "${businessUserId}". Check BIZ_USER_ID_TO_PG_UUID mapping.`;
+    console.error(msg);
+    throw new Error(msg);
+  }
+
   const { threadId, agentName, title, messages } = record;
 
-  // 1. 确保 session 存在
-  const session = await ensureSession(userId, threadId, agentName, title);
+  // 2. 确保 session 存在
+  let session: SessionRow;
+  try {
+    session = await ensureSession(pgUserId, threadId, agentName, title);
+  } catch (err) {
+    console.error(
+      `[server-actions] upsertSession FAILED: pgUserId=${pgUserId} threadId=${threadId}`,
+      formatError(err),
+    );
+    throw err;
+  }
 
-  // 2. 更新标题（LangGraph 生成后可能有变化）
+  // 3. 更新标题
   if (title && title !== session.title) {
     try {
       await updateSession(session.id, { title });
-    } catch {
-      // 标题更新非关键路径
+    } catch (err) {
+      console.error(
+        `[server-actions] updateSession title FAILED: sessionId=${session.id}`,
+        formatError(err),
+      );
     }
   }
 
-  // 3. 批量写入消息
+  // 4. 批量写入消息
   try {
-    await saveMessages(session.id, messages, userId);
+    const saved = await saveMessages(session.id, messages, pgUserId);
+    console.log(
+      `[server-actions] saveChatComplete SUCCESS: ` +
+        `user=${businessUserId} pgUserId=${pgUserId} session=${session.id} msgs=${saved.length}`,
+    );
   } catch (err) {
-    console.error("[server-actions] Failed to save messages:", err);
+    console.error(
+      `[server-actions] saveMessages FAILED: sessionId=${session.id} msgCount=${messages.length}`,
+      formatError(err),
+    );
+    throw err;
   }
 }
 
-// ── 读取 ───────────────────────────────────────────
+// ── 读取 ──────────────────────────────────────────
 
 /**
  * 获取用户聊天历史列表（仅 PostgreSQL）。
  * 客户端应自行处理 localStorage fallback。
+ *
+ * @param businessUserId - 业务用户 ID
  */
 export async function getChatHistoryAction(
-  userId: string,
+  businessUserId: string,
 ): Promise<ChatSessionSummary[]> {
-  const sessions = await listRecentSessions(userId, 10);
+  const pgUserId = resolvePgUserId(businessUserId);
+  if (!pgUserId) {
+    console.error(
+      `[server-actions] Cannot resolve PG UUID for getChatHistory: "${businessUserId}"`,
+    );
+    return [];
+  }
+
+  const sessions = await listRecentSessions(pgUserId, 10);
   return sessions.map((s) => ({
     sessionId: s.id,
     threadId: s.thread_id ?? "",

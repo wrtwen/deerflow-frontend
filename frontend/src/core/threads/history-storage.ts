@@ -30,7 +30,7 @@ interface ChatHistoryDoc {
 const STORAGE_KEY_PREFIX = "deerflow.chat-history.";
 const MAX_CHATS = 10;
 
-/** PoC 阶段默认 userId；SSO 后改为 user.userId */
+/** @deprecated 请使用 AppUser.userId（从 useUser() 获取）。SSO 上线后删除。 */
 let _defaultUserId = "u-001";
 
 // ── 工具函数 ──────────────────────────────────────────────
@@ -61,11 +61,12 @@ function writeDoc(doc: ChatHistoryDoc): void {
 
 // ── 公开 API ──────────────────────────────────────────────
 
-/** 设置默认 userId（PoC 阶段由外部注入） */
+  /** @deprecated 使用 AppUser.userId 替代，不再通过全局变量传递用户标识 */
 export function setDefaultUserId(userId: string): void {
   _defaultUserId = userId;
 }
 
+/** @deprecated 使用 AppUser.userId 替代 */
 export function getDefaultUserId(): string {
   return _defaultUserId;
 }
